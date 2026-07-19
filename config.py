@@ -6,4 +6,8 @@ class config:
     #WhatsApp Cloud API
     ACCESS_TOKEN = ""
     PHONE_NUMBER_ID = ""
-    
+    VERIFY_TOKEN =
+"ce_chatbot_verify_token"
+
+    #Database
+    DATABASE = "chatbot.db"
