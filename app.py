@@ -1,23 +1,35 @@
 from flask import Flask, request
 from chatbot import get_response
+from database import create_database
 
 app = Flask(__name__)
 
+# Create database when server starts
+create_database()
 
-@app.route("/")
+
+@app.route("/", methods=["GET"])
 def home():
     return """
     <h1>🎓 Computer Engineering Department</h1>
     <h2>WhatsApp Chatbot</h2>
-    <p>Server Status: <b>Running ✅</b></p>
 
     <hr>
 
     <h3>Test Your Chatbot</h3>
 
-    <form action="/chat" method="post">
-        <input type="text" name="message" placeholder="Type your message">
-        <button type="submit">Send</button>
+    <form action="/chat" method="POST">
+
+        <input
+            type="text"
+            name="message"
+            placeholder="Type your message"
+            required>
+
+        <button type="submit">
+            Send
+        </button>
+
     </form>
     """
 
@@ -27,7 +39,10 @@ def chat():
 
     user_message = request.form["message"]
 
-    bot_reply = get_response(user_message)
+    # Dummy user id for browser testing
+    user_id = "test_user"
+
+    bot_reply = get_response(user_id, user_message)
 
     return f"""
     <h2>🤖 Chatbot Reply</h2>
