@@ -1,44 +1,93 @@
-from responses import (
-    MAIN_MENU,
-    ADMISSION_MENU,
-    FEES_INFO,
-    CATEGORY_INFO,
-    CONTACT_INFO,
-    UNKNOWN_MESSAGE
-)
+from responses import *
+from state_manager import get_state, set_state
 
 
-def get_response(user_message):
-    """
-    Returns the chatbot response based on the user's message.
-    """
+def get_response(user_id, user_message):
 
-    message = user_message.strip().lower()
+    message = user_message.strip()
 
-    # Main Menu
-    if message in ["hi", "hello", "hey", "start", "menu"]:
-        return MAIN_MENU
+    state = get_state(user_id)
 
-    # Admission Menu
-    elif message == "1":
-        return ADMISSION_MENU
+    # ---------------- MAIN MENU ----------------
 
-    # Fees Information
-    elif message == "2":
-        return FEES_INFO
+    if state == "MAIN_MENU":
 
-    # Category Information
-    elif message == "3":
-        return CATEGORY_INFO
+        if message.lower() in ["hi", "hello", "hey", "menu", "start"]:
+            return MAIN_MENU
 
-    # Contact Information
-    elif message == "4":
-        return CONTACT_INFO
+        elif message == "1":
+            set_state(user_id, "ADMISSION_MENU")
+            return ADMISSION_MENU
 
-    # Go Back
-    elif message == "0":
-        return MAIN_MENU
+        elif message == "2":
+            return FACULTY_INFO
 
-    # Invalid Input
-    else:
-        return UNKNOWN_MESSAGE
+        elif message == "3":
+            return DEPARTMENT_INFO
+
+        elif message == "4":
+            return FACILITIES_INFO
+
+        elif message == "5":
+            return CONTACT_INFO
+
+        else:
+            return UNKNOWN_MESSAGE
+
+
+    # ---------------- ADMISSION MENU ----------------
+
+    elif state == "ADMISSION_MENU":
+
+        if message == "1":
+            return ELIGIBILITY_INFO
+
+        elif message == "2":
+            return FEES_INFO
+
+        elif message == "3":
+            set_state(user_id, "DOCUMENT_MENU")
+            return DOCUMENT_MENU
+
+        elif message == "4":
+            return ADMISSION_PROCESS
+
+        elif message == "0":
+            set_state(user_id, "MAIN_MENU")
+            return MAIN_MENU
+
+        else:
+            return UNKNOWN_MESSAGE
+
+
+    # ---------------- DOCUMENT MENU ----------------
+
+    elif state == "DOCUMENT_MENU":
+
+        if message == "1":
+            return GENERAL_DOCUMENTS
+
+        elif message == "2":
+            return EWS_DOCUMENTS
+
+        elif message == "3":
+            return OBC_DOCUMENTS
+
+        elif message == "4":
+            return SEBC_DOCUMENTS
+
+        elif message == "5":
+            return SC_DOCUMENTS
+
+        elif message == "6":
+            return ST_DOCUMENTS
+
+        elif message == "0":
+            set_state(user_id, "ADMISSION_MENU")
+            return ADMISSION_MENU
+
+        else:
+            return UNKNOWN_MESSAGE
+
+
+    return UNKNOWN_MESSAGE
