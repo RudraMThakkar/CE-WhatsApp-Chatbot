@@ -9,7 +9,7 @@ import sqlite3
 DATABASE_NAME = "chatbot.db"
 
 
-def create_database():
+def initialize_database():
     """
     Creates the chatbot database and required tables.
     """

@@ -1,46 +1,24 @@
-from flask import Flask, request
+from flask import Flask, render_template, request
 from chatbot import get_response
-from database import create_database
+from database import initialize_database
+
+# Create database
+initialize_database()
 
 app = Flask(__name__)
 
-# Create database when server starts
-create_database()
 
-
-@app.route("/", methods=["GET"])
+@app.route("/")
 def home():
-    return """
-    <h1>🎓 Computer Engineering Department</h1>
-    <h2>WhatsApp Chatbot</h2>
-
-    <hr>
-
-    <h3>Test Your Chatbot</h3>
-
-    <form action="/chat" method="POST">
-
-        <input
-            type="text"
-            name="message"
-            placeholder="Type your message"
-            required>
-
-        <button type="submit">
-            Send
-        </button>
-
-    </form>
-    """
+    return render_template("index.html")
 
 
 @app.route("/chat", methods=["POST"])
 def chat():
 
-    user_message = request.form["message"]
+    user_id = "web_user"
 
-    # Dummy user id for browser testing
-    user_id = "test_user"
+    user_message = request.form["message"]
 
     bot_reply = get_response(user_id, user_message)
 
