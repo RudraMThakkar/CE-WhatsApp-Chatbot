@@ -40,17 +40,17 @@ def get_response(user_id, user_message):
     elif state == "ADMISSION_MENU":
 
         if message == "1":
-            return ELIGIBILITY_INFO
+            return get_data("admission", "eligibility")
 
         elif message == "2":
-            return FEES_INFO
+            return get_data("admission", "fees")
 
         elif message == "3":
             set_state(user_id, "DOCUMENT_MENU")
             return DOCUMENT_MENU
 
         elif message == "4":
-            return ADMISSION_PROCESS
+            return get_data("admission", "process")
 
         elif message == "0":
             set_state(user_id, "MAIN_MENU")
@@ -65,22 +65,22 @@ def get_response(user_id, user_message):
     elif state == "DOCUMENT_MENU":
 
         if message == "1":
-            return GENERAL_DOCUMENTS
+            return get_data("documents", "general")
 
         elif message == "2":
-            return EWS_DOCUMENTS
+            return get_data("documents", "ews")
 
         elif message == "3":
-            return OBC_DOCUMENTS
+            return get_data("documents", "obc")
 
         elif message == "4":
-            return SEBC_DOCUMENTS
+            return get_data("documents", "sebc")
 
         elif message == "5":
-            return SC_DOCUMENTS
+            return get_data("documents", "sc")
 
         elif message == "6":
-            return ST_DOCUMENTS
+            return get_data("documents", "st")
 
         elif message == "0":
             set_state(user_id, "ADMISSION_MENU")
