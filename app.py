@@ -2,15 +2,18 @@ from flask import Flask, render_template, request
 from chatbot import get_response
 from database import initialize_database
 
-# Create database
+# Initialize database
 initialize_database()
 
 app = Flask(__name__)
 
+# Store chat history (for web testing only)
+chat_history = []
+
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    return render_template("index.html", chat_history=chat_history)
 
 
 @app.route("/chat", methods=["POST"])
@@ -18,23 +21,27 @@ def chat():
 
     user_id = "web_user"
 
-    user_message = request.form["message"]
+    user_message = request.form["message"].strip()
+
+    if user_message == "":
+        return "", 204
 
     bot_reply = get_response(user_id, user_message)
 
-    return f"""
-    <h2>🤖 Chatbot Reply</h2>
+    # Save user message
+    chat_history.append({
+        "sender": "user",
+        "text": user_message
+    })
 
-    <p><b>You:</b> {user_message}</p>
+    # Save bot message
+    chat_history.append({
+        "sender": "bot",
+        "text": bot_reply
+    })
 
-    <p><b>Bot:</b></p>
-
-    <pre>{bot_reply}</pre>
-
-    <br>
-
-    <a href="/">⬅ Back</a>
-    """
+    # Return only the bot reply
+    return bot_reply
 
 
 if __name__ == "__main__":

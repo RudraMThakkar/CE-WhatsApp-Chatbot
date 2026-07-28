@@ -8,7 +8,7 @@ Contains all chatbot responses and menus.
 # ==========================================
 
 MAIN_MENU = """
-🏫 Welcome to Computer Engineering Department
+🏠 Welcome to Computer Engineering Department
 
 Please choose an option:
 
