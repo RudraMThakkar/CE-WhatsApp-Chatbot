@@ -1,10 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>CE WhatsApp Chatbot</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
 
 </head>
 
@@ -18,40 +23,104 @@
         WhatsApp Chatbot
     </div>
 
-    <div class="chat-box">
+    <div class="chat-box" id="chatBox">
 
-        {% if chat_history %}
+        {% for msg in chat_history %}
 
-            {% for msg in chat_history %}
+            <div class="{{ msg.sender }}">
+                {{ msg.text }}
+            </div>
 
-                <div class="{{ msg.sender }}">
-                    {{ msg.text }}
-                </div>
-
-            {% endfor %}
-
-        {% endif %}
+        {% endfor %}
 
     </div>
 
-    <form action="/chat" method="POST">
+    <form id="chatForm">
 
         <input
+            id="message"
             type="text"
-            name="message"
             placeholder="Type your message..."
             autocomplete="off"
             required>
 
         <button type="submit">
-
             Send
-
         </button>
 
     </form>
 
 </div>
 
+<script>
+
+const form = document.getElementById("chatForm");
+const input = document.getElementById("message");
+const chatBox = document.getElementById("chatBox");
+
+chatBox.scrollTop = chatBox.scrollHeight;
+
+form.addEventListener("submit", async function(e){
+
+    e.preventDefault();
+
+    const message = input.value.trim();
+
+    if(message === "")
+        return;
+
+    // User message
+    const userDiv = document.createElement("div");
+    userDiv.className = "user";
+    userDiv.innerText = message;
+    chatBox.appendChild(userDiv);
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    input.value = "";
+
+    // Send message
+    const response = await fetch("/chat",{
+
+        method:"POST",
+
+        headers:{
+            "Content-Type":"application/x-www-form-urlencoded"
+        },
+
+        body:"message="+encodeURIComponent(message)
+
+    });
+
+    const reply = await response.text();
+
+    // Bot reply
+    const botDiv = document.createElement("div");
+    botDiv.className = "bot";
+    botDiv.innerText = reply;
+
+    chatBox.appendChild(botDiv);
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    input.focus();
+
+});
+
+input.addEventListener("keypress",function(e){
+
+    if(e.key==="Enter"){
+
+        e.preventDefault();
+
+        form.requestSubmit();
+
+    }
+
+});
+
+</script>
+
 </body>
+
 </html>
