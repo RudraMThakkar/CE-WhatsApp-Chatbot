@@ -89,16 +89,18 @@ def insert_data(category, subcategory, response):
     conn.commit()
     conn.close()
 
-
 def get_data(category, subcategory):
+    """
+    Returns chatbot response from database.
+    """
 
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
 
     cursor.execute("""
-    SELECT response
-    FROM chatbot_data
-    WHERE category=? AND subcategory=?
+        SELECT response
+        FROM chatbot_data
+        WHERE category=? AND subcategory=?
     """, (category, subcategory))
 
     result = cursor.fetchone()
