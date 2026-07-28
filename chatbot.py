@@ -1,6 +1,6 @@
 from responses import *
 from state_manager import get_state, set_state
-
+from database import get_data
 
 def get_response(user_id, user_message):
 
@@ -20,16 +20,16 @@ def get_response(user_id, user_message):
             return ADMISSION_MENU
 
         elif message == "2":
-            return FACULTY_INFO
+            return get_data("faculty", "all")
 
         elif message == "3":
-            return DEPARTMENT_INFO
+            return get_data("department", "about")
 
         elif message == "4":
-            return FACILITIES_INFO
+            return get_data("facilities", "labs")
 
         elif message == "5":
-            return CONTACT_INFO
+            return get_data("contact", "department")
 
         else:
             return UNKNOWN_MESSAGE
