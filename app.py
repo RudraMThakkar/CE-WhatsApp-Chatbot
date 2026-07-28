@@ -1,11 +1,14 @@
 from flask import Flask, render_template, request
 from chatbot import get_response
 from database import initialize_database
+from webhook import webhook
 
 # Initialize database
 initialize_database()
 
 app = Flask(__name__)
+
+app.register_blueprint(webhook)
 
 # Store chat history (for web testing only)
 chat_history = []
