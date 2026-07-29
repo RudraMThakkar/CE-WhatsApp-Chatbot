@@ -2,10 +2,14 @@ from flask import Blueprint, request
 from chatbot import get_response
 from whatsapp import send_whatsapp_message
 from config import Config
+import json
 
 webhook = Blueprint("webhook", __name__)
 
 
+# -----------------------------
+# Verify Webhook
+# -----------------------------
 @webhook.route("/webhook", methods=["GET"])
 def verify():
 
@@ -14,49 +18,78 @@ def verify():
     challenge = request.args.get("hub.challenge")
 
     if mode == "subscribe" and token == Config.VERIFY_TOKEN:
+        print("Webhook Verified Successfully")
         return challenge, 200
 
+    print("Webhook Verification Failed")
     return "Verification failed", 403
 
 
+# -----------------------------
+# Receive Messages
+# -----------------------------
 @webhook.route("/webhook", methods=["POST"])
 def receive():
 
     data = request.get_json()
 
-    print("\n========== Incoming WhatsApp Webhook ==========")
-    print(data)
+    print("\n================= WEBHOOK RECEIVED =================")
+    print(json.dumps(data, indent=4))
+    print("====================================================\n")
 
     try:
 
-        if "entry" in data:
+        if data.get("object") != "whatsapp_business_account":
+            print("Not a WhatsApp webhook.")
+            return "EVENT_RECEIVED", 200
 
-            entry = data["entry"][0]
+        for entry in data.get("entry", []):
 
-            changes = entry["changes"][0]
+            for change in entry.get("changes", []):
 
-            value = changes["value"]
+                value = change.get("value", {})
 
-            if "messages" in value:
+                # Status updates
+                if "statuses" in value:
+                    print("Status Update:")
+                    print(json.dumps(value["statuses"], indent=4))
 
-                message = value["messages"][0]
+                # Incoming messages
+                if "messages" in value:
 
-                phone_number = message["from"]
+                    message = value["messages"][0]
 
-                message_text = message["text"]["body"]
+                    phone_number = message.get("from")
+                    message_type = message.get("type")
 
-                print("Phone:", phone_number)
+                    print("Incoming Message Type:", message_type)
 
-                print("Message:", message_text)
+                    if message_type == "text":
 
-                reply = get_response(phone_number, message_text)
+                        message_text = message["text"]["body"]
 
-                print("Bot Reply:", reply)
+                        print("Phone :", phone_number)
+                        print("Message :", message_text)
 
-                send_whatsapp_message(phone_number, reply)
+                        reply = get_response(phone_number, message_text)
+
+                        print("Bot Reply :", reply)
+
+                        response = send_whatsapp_message(
+                            phone_number,
+                            reply
+                        )
+
+                        print("Send Message Response :", response)
+
+                    else:
+                        print("Unsupported message type:", message_type)
 
     except Exception as e:
+        import traceback
 
-        print("Webhook Error:", e)
+        print("\n******** WEBHOOK ERROR ********")
+        traceback.print_exc()
+        print("*******************************\n")
 
     return "EVENT_RECEIVED", 200
