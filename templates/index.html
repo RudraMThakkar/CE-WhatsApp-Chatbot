@@ -1,126 +1,245 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>CE WhatsApp Chatbot</title>
-
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='style.css') }}">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CE Department • WhatsApp</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
-
 <body>
-
-<div class="container">
-
-    <div class="header">
-        🎓 Computer Engineering Department
-        <br>
-        WhatsApp Chatbot
-    </div>
-
-    <div class="chat-box" id="chatBox">
-
-        {% for msg in chat_history %}
-
-            <div class="{{ msg.sender }}">
-                {{ msg.text }}
+    <div class="phone-frame">
+        <!-- Status bar (decorative) -->
+        <div class="status-bar">
+            <span class="time" id="statusTime">9:41</span>
+            <div class="status-icons">
+                <i class="fas fa-signal"></i>
+                <i class="fas fa-wifi"></i>
+                <i class="fas fa-battery-full"></i>
             </div>
+        </div>
 
-        {% endfor %}
+        <!-- WhatsApp Header -->
+        <div class="wa-header">
+            <div class="header-left">
+                <button class="back-btn" title="Back">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="avatar">
+                    <span>CE</span>
+                </div>
+                <div class="contact-info">
+                    <div class="contact-name">Computer Engineering</div>
+                    <div class="contact-status" id="onlineStatus">online</div>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="icon-btn" title="Video call"><i class="fas fa-video"></i></button>
+                <button class="icon-btn" title="Voice call"><i class="fas fa-phone"></i></button>
+                <button class="icon-btn" title="Menu"><i class="fas fa-ellipsis-v"></i></button>
+            </div>
+        </div>
 
+        <!-- Chat area -->
+        <div class="chat-area" id="chatBox">
+            <div class="chat-bg"></div>
+            <div class="messages-wrapper" id="messagesWrapper">
+                <!-- Welcome / date separator -->
+                <div class="date-separator">
+                    <span>Today</span>
+                </div>
+
+                {% for msg in chat_history %}
+                    <div class="message-row {{ msg.sender }}">
+                        <div class="bubble">
+                            <div class="bubble-text">{{ msg.text }}</div>
+                            <div class="bubble-meta">
+                                <span class="time">{{ msg.get('time', '') }}</span>
+                                {% if msg.sender == 'user' %}
+                                <span class="ticks"><i class="fas fa-check-double"></i></span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Input bar -->
+        <div class="input-bar">
+            <form id="chatForm" autocomplete="off">
+                <button type="button" class="emoji-btn" title="Emoji">
+                    <i class="far fa-smile"></i>
+                </button>
+                <div class="input-wrapper">
+                    <input
+                        id="message"
+                        type="text"
+                        placeholder="Type a message"
+                        autocomplete="off"
+                        required
+                    >
+                </div>
+                <button type="button" class="attach-btn" title="Attach">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+                <button type="submit" class="send-btn" id="sendBtn" title="Send">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
     </div>
 
-    <form id="chatForm">
+    <script>
+        const form = document.getElementById("chatForm");
+        const input = document.getElementById("message");
+        const chatBox = document.getElementById("chatBox");
+        const messagesWrapper = document.getElementById("messagesWrapper");
+        const onlineStatus = document.getElementById("onlineStatus");
+        const statusTime = document.getElementById("statusTime");
 
-        <input
-            id="message"
-            type="text"
-            placeholder="Type your message..."
-            autocomplete="off"
-            required>
+        function updateClock() {
+            const now = new Date();
+            const h = now.getHours().toString().padStart(2, "0");
+            const m = now.getMinutes().toString().padStart(2, "0");
+            statusTime.textContent = `${h}:${m}`;
+        }
+        updateClock();
+        setInterval(updateClock, 30000);
 
-        <button type="submit">
-            Send
-        </button>
+        function getTimeString() {
+            const now = new Date();
+            let h = now.getHours();
+            const m = now.getMinutes().toString().padStart(2, "0");
+            const ampm = h >= 12 ? "PM" : "AM";
+            h = h % 12 || 12;
+            return `${h}:${m} ${ampm}`;
+        }
 
-    </form>
+        function scrollToBottom(smooth = true) {
+            chatBox.scrollTo({
+                top: chatBox.scrollHeight,
+                behavior: smooth ? "smooth" : "auto"
+            });
+        }
 
-</div>
+        function createMessageRow(sender, text, time) {
+            const row = document.createElement("div");
+            row.className = `message-row ${sender}`;
 
-<script>
+            const bubble = document.createElement("div");
+            bubble.className = "bubble";
 
-const form = document.getElementById("chatForm");
-const input = document.getElementById("message");
-const chatBox = document.getElementById("chatBox");
+            const textDiv = document.createElement("div");
+            textDiv.className = "bubble-text";
+            textDiv.textContent = text;
 
-chatBox.scrollTop = chatBox.scrollHeight;
+            const meta = document.createElement("div");
+            meta.className = "bubble-meta";
 
-form.addEventListener("submit", async function(e){
+            const timeSpan = document.createElement("span");
+            timeSpan.className = "time";
+            timeSpan.textContent = time || getTimeString();
 
-    e.preventDefault();
+            meta.appendChild(timeSpan);
 
-    const message = input.value.trim();
+            if (sender === "user") {
+                const ticks = document.createElement("span");
+                ticks.className = "ticks";
+                ticks.innerHTML = '<i class="fas fa-check-double"></i>';
+                meta.appendChild(ticks);
+            }
 
-    if(message === "")
-        return;
+            bubble.appendChild(textDiv);
+            bubble.appendChild(meta);
+            row.appendChild(bubble);
 
-    // User message
-    const userDiv = document.createElement("div");
-    userDiv.className = "user";
-    userDiv.innerText = message;
-    chatBox.appendChild(userDiv);
+            return row;
+        }
 
-    chatBox.scrollTop = chatBox.scrollHeight;
+        function showTyping() {
+            onlineStatus.textContent = "typing...";
+            onlineStatus.classList.add("typing");
 
-    input.value = "";
+            const typingRow = document.createElement("div");
+            typingRow.className = "message-row bot typing-indicator";
+            typingRow.id = "typingIndicator";
+            typingRow.innerHTML = `
+                <div class="bubble typing-bubble">
+                    <div class="typing-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            `;
+            messagesWrapper.appendChild(typingRow);
+            scrollToBottom();
+        }
 
-    // Send message
-    const response = await fetch("/chat",{
+        function hideTyping() {
+            onlineStatus.textContent = "online";
+            onlineStatus.classList.remove("typing");
+            const indicator = document.getElementById("typingIndicator");
+            if (indicator) indicator.remove();
+        }
 
-        method:"POST",
+        // Initial scroll
+        scrollToBottom(false);
 
-        headers:{
-            "Content-Type":"application/x-www-form-urlencoded"
-        },
+        form.addEventListener("submit", async function (e) {
+            e.preventDefault();
 
-        body:"message="+encodeURIComponent(message)
+            const message = input.value.trim();
+            if (!message) return;
 
-    });
+            // User message
+            const userRow = createMessageRow("user", message, getTimeString());
+            messagesWrapper.appendChild(userRow);
+            scrollToBottom();
 
-    const reply = await response.text();
+            input.value = "";
+            input.focus();
 
-    // Bot reply
-    const botDiv = document.createElement("div");
-    botDiv.className = "bot";
-    botDiv.innerText = reply;
+            // Show typing
+            showTyping();
 
-    chatBox.appendChild(botDiv);
+            try {
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: "message=" + encodeURIComponent(message)
+                });
 
-    chatBox.scrollTop = chatBox.scrollHeight;
+                const reply = await response.text();
 
-    input.focus();
+                // Small delay for realistic feel
+                await new Promise(r => setTimeout(r, 400 + Math.random() * 600));
 
-});
+                hideTyping();
 
-input.addEventListener("keypress",function(e){
+                if (reply) {
+                    const botRow = createMessageRow("bot", reply, getTimeString());
+                    messagesWrapper.appendChild(botRow);
+                    scrollToBottom();
+                }
+            } catch (err) {
+                hideTyping();
+                const errRow = createMessageRow("bot", "⚠️ Connection error. Please try again.", getTimeString());
+                messagesWrapper.appendChild(errRow);
+                scrollToBottom();
+            }
+        });
 
-    if(e.key==="Enter"){
+        input.addEventListener("keypress", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                form.requestSubmit();
+            }
+        });
 
-        e.preventDefault();
-
-        form.requestSubmit();
-
-    }
-
-});
-
-</script>
-
+        // Focus input on load
+        input.focus();
+    </script>
 </body>
-
 </html>
